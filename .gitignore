@@ -2,3 +2,5 @@
 /site
 docs/build/
 Manifest.toml
+
+.CondaPkg/*
