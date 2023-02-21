@@ -15,7 +15,18 @@ function __init__()
     PythonCall.pycopy!(sk_base, pyimport("sklearn.base"))
 end
 
-const translated_modules = Dict{Symbol, Symbol}()
+const translated_modules = Dict{Symbol, Vector{Symbol}}(
+    :model_selection => [
+                        :train_test_split,
+                        :check_cv,
+                        :cross_validate,
+                        :cross_val_predict,
+                        :cross_val_score,
+                        :learning_curve,
+                        :permutation_test_score,
+                        :validation_curve,
+                        ], 
+)
 
 include("utils.jl")
 include("base.jl")
@@ -46,16 +57,6 @@ score,
 score_samples,
 sample,
 get_feature_names,
-
-# model_selection
-train_test_split,
-check_cv,
-cross_validate,
-cross_val_predict,
-cross_val_score,
-learning_curve,
-permutation_test_score,
-validation_curve,
 
 # utils
 @sk_import

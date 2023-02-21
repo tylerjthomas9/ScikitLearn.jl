@@ -1,5 +1,6 @@
 
 @testset "train_test_split" begin
+    @sk_import model_selection: train_test_split
     return_type = Tuple{Matrix{Float64}, Matrix{Float64}, Vector{Float64}, Vector{Float64}}
 
     # Python input
@@ -26,12 +27,14 @@
 end
 
 @testset "check_cv" begin
+    @sk_import model_selection: check_cv
     check_cv(5)
     check_cv(5, rand(100))
     check_cv(5, rand(100); classifier=true)
 end
 
 @testset "cross_validate" begin
+    @sk_import model_selection: cross_validate
     logistic_reg = LogisticRegression(max_iter=2)
     X = rand(100, 5)
     y = rand(0:1, 100)
@@ -40,6 +43,7 @@ end
 end
 
 @testset "cross_val_predict" begin
+    @sk_import model_selection: cross_val_predict
     logistic_reg = LogisticRegression(max_iter=2)
     X = rand(100, 5)
     y = rand(0:1, 100)
@@ -53,6 +57,7 @@ end
 end
 
 @testset "learning_curve" begin
+    @sk_import model_selection: learning_curve
     logistic_reg = LogisticRegression(max_iter=2)
     X = rand(100, 5)
     y = rand(0:1, 100)
@@ -69,6 +74,7 @@ end
 end
 
 @testset "permutation_test_score" begin
+    @sk_import model_selection: permutation_test_score
     logistic_reg = LogisticRegression(max_iter=2)
     X = rand(100, 5)
     y = rand(0:1, 100)
@@ -80,6 +86,7 @@ end
 end
 
 @testset "validation_curve" begin
+    @sk_import model_selection: validation_curve
     logistic_reg = LogisticRegression(max_iter=2)
     X = rand(100, 5)
     y = rand(0:1, 100)
