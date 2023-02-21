@@ -28,9 +28,15 @@ const translated_modules = Dict{Symbol, Vector{Symbol}}(
                         ], 
 )
 
-include("utils.jl")
+include("sk_import.jl")
 include("base.jl")
 include("model_selection.jl")
+include("datasets.jl")
+
+module Utils
+include("ndgrid.jl")
+end
+
 
 export 
 # python imports
