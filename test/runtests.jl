@@ -25,4 +25,5 @@ warnings.simplefilter(; action="ignore",
     include("test_sklearn_api.jl")
     include("test_pipeline.jl")
     include("test_model_selection.jl")
+    include("test_datasets.jl")
 end

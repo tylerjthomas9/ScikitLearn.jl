@@ -8,11 +8,14 @@ using PythonCall
 const numpy = PythonCall.pynew()
 const sklearn = PythonCall.pynew()
 const sk_base = PythonCall.pynew()
+const sk_datasets = PythonCall.pynew()
+const sk_dataset_methods = [pyconvert(String, i) for i in pybuiltins.dir(pyimport("sklearn.datasets"))]
 
 function __init__()
     PythonCall.pycopy!(numpy, pyimport("numpy"))
     PythonCall.pycopy!(sklearn, pyimport("sklearn"))
     PythonCall.pycopy!(sk_base, pyimport("sklearn.base"))
+    PythonCall.pycopy!(sk_datasets, pyimport("sklearn.datasets"))
 end
 
 const translated_modules = Dict{Symbol, Vector{Symbol}}(
@@ -25,7 +28,10 @@ const translated_modules = Dict{Symbol, Vector{Symbol}}(
                         :learning_curve,
                         :permutation_test_score,
                         :validation_curve,
-                        ], 
+    ], 
+    :datasets =>       [
+        :make_biclusters
+    ],
 )
 
 include("sk_import.jl")
