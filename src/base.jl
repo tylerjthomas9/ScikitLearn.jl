@@ -44,8 +44,8 @@ set_params!(estimator::Py; kwargs...) = set_params!(estimator, Dict{Symbol, Any}
 is_pairwise(estimator) = false # global default - override for specific models
 is_pairwise(py_estimator::Py) =
     hasproperty(py_estimator, :_pairwise) ? pyconvert(Bool, py_estimator._pairwise) : false
-get_classes(py_estimator::Py) = py_estimator.classes_
-get_components(py_estimator::Py) = py_estimator.components_
+get_classes(py_estimator::Py) = pyconvert(Vector, py_estimator.classes_)
+get_components(py_estimator::Py) = pyconvert(Array, py_estimator.components_)
 is_transformer(estimator::Type) = !isempty(methods(transform, (estimator, Any)))
 is_transformer(estimator::Any) = is_transformer(typeof(estimator))
 named_steps(pip::Py) = pyconvert(Tuple, pip.steps) |> Dict

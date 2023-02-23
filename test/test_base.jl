@@ -20,8 +20,16 @@ end
     iris = load_iris()
     X = iris["data"]
     y = iris["target"]
+
     svc = SVC(max_iter=2)
     fit!(svc, X, y)
+    c = ScikitLearn.get_classes(svc)
+    @test size(c) == (3,)
+
+    pca = PCA(n_components=2)
+    fit!(pca, X)
+    c = ScikitLearn.get_components(pca)
+    @test size(c) == (2,4)
 end
 
 @testset "get_params/set_params!" begin
