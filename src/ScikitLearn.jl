@@ -36,7 +36,7 @@ const translated_modules = Dict{Symbol, Vector{Symbol}}(
                         :permutation_test_score,
                         :validation_curve,
     ], 
-    :datasets => samples_generators,
+    :datasets => sample_generators,
 )
 
 
