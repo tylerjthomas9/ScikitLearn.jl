@@ -19,11 +19,11 @@ api_map = Dict(:decision_function => :decision_function,
                :set_params! => :set_params)
                
 for (jl_fun, py_fun) in api_map
-    @eval $jl_fun(py_model::Py, args...; kwargs...) =
-        tweak_rval(py_model.$(py_fun)(args...; kwargs...))
+    @eval $jl_fun(py_estimator::Py, args...; kwargs...) =
+        tweak_rval(py_estimator.$(py_fun)(args...; kwargs...))
 end
 
-fit!(py_model::Py, args...; kwargs...) = py_model.fit(args...; kwargs...)
+fit!(py_estimator::Py, args...; kwargs...) = py_estimator.fit(args...; kwargs...)
 
 ################################################################################
 # Functions
@@ -42,8 +42,8 @@ set_params!(estimator::Py; kwargs...) = set_params!(estimator, Dict{Symbol, Any}
 
 # not in the python package
 is_pairwise(estimator) = false # global default - override for specific models
-is_pairwise(py_model::Py) =
-    hasproperty(py_model, :_pairwise) ? pyconvert(Bool, py_model._pairwise) : false
+is_pairwise(py_estimator::Py) =
+    hasproperty(py_estimator, :_pairwise) ? pyconvert(Bool, py_estimator._pairwise) : false
 get_classes(py_estimator::Py) = py_estimator.classes_
 get_components(py_estimator::Py) = py_estimator.components_
 is_transformer(estimator::Type) = !isempty(methods(transform, (estimator, Any)))

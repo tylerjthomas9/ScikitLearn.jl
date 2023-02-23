@@ -12,7 +12,7 @@ Check if function has a julia wrapper. This occurs
 when data needs to be prepared before being passed to the
 python function or processed after it is returned. 
 """
-function _julia_wraper(translated_modules, mod, what)
+function _julia_wrapper(translated_modules, mod, what)
     if haskey(translated_modules, mod)
         if any(translated_modules[mod] .== what)
             return true
@@ -43,7 +43,7 @@ macro sk_import(expr)
     mod_string = "sklearn.$mod"
     res_expr = Vector{Expr}()
     for w in members
-        if _julia_wraper(translated_modules, mod, w)
+        if _julia_wrapper(translated_modules, mod, w)
             push!(res_expr, :((import ScikitLearn: $(w))))
         else
             mod_obj = pyimport(mod_string)

@@ -1,6 +1,6 @@
 /.DS_Store
 /site
 docs/build/
-Manifest.toml
+/Manifest.toml
 
 .CondaPkg/*

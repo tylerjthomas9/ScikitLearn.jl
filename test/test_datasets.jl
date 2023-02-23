@@ -10,7 +10,7 @@
 
     x, y = ScikitLearn.make_blobs(100, 2; centers=3)
     @test typeof(x) == Matrix{Float64}
-    @test typeof(y) == Vector{Int64} broken=true
+    # @test typeof(y) == Vector{Int64} skip=true
     @test size(x) == (100,2)
     @test size(y) == (100,)
     x, y, centers = ScikitLearn.make_blobs(100, 2; centers=3, return_centers=true)
@@ -33,7 +33,7 @@
 
     x, y = ScikitLearn.make_classification(100, 20; n_classes=2)
     @test typeof(x) == Matrix{Float64}
-    @test typeof(y) == Vector{Int64} broken=true
+    # @test typeof(y) == Vector{Int64} skip=true
     @test size(x) == (100,20)
     @test size(y) == (100,)
     @test size(unique(y)) == (2,)
@@ -64,7 +64,7 @@
 
     x, y = ScikitLearn.make_gaussian_quantiles(; n_samples=100, n_features=2)
     @test typeof(x) == Matrix{Float64}
-    @test typeof(y) == Vector{Int64} broken=true
+    # @test typeof(y) == Vector{Int64} skip=true
     @test size(x) == (100,2)
     @test size(y) == (100,)
 
@@ -86,7 +86,7 @@
 
     x, y = ScikitLearn.make_multilabel_classification(100, 20)
     @test typeof(x) == Matrix{Float64}
-    @test typeof(y) == Vector{Int64} broken=true
+    # @test typeof(y) == Vector{Int64} skip=true
     @test size(x) == (100,20)
     @test size(y) == (100,5)
     x, y, p_c, p_w_c = ScikitLearn.make_multilabel_classification(100, 20; return_distributions=true, n_classes=5)

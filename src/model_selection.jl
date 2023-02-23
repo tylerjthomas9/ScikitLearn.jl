@@ -45,7 +45,6 @@ function learning_curve(estimator::Py, X, y; kwargs...)
     return tuple(tweak_rval.(scores)...)
 end
 
-
 function permutation_test_score(estimator::Py, X, y; kwargs...)
     py_xy = _prepare_input.((X,y))
     scores = sklearn.model_selection.permutation_test_score(estimator, py_xy...; kwargs...)

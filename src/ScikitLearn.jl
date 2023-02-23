@@ -10,13 +10,20 @@ const sklearn = PythonCall.pynew()
 const sk_base = PythonCall.pynew()
 const sk_datasets = PythonCall.pynew()
 const sk_dataset_methods = [pyconvert(String, i) for i in pybuiltins.dir(pyimport("sklearn.datasets"))]
+const sk_pipeline = PythonCall.pynew()
 
 function __init__()
     PythonCall.pycopy!(numpy, pyimport("numpy"))
     PythonCall.pycopy!(sklearn, pyimport("sklearn"))
     PythonCall.pycopy!(sk_base, pyimport("sklearn.base"))
     PythonCall.pycopy!(sk_datasets, pyimport("sklearn.datasets"))
+    PythonCall.pycopy!(sk_pipeline, pyimport("sklearn.pipeline"))
 end
+
+include("sk_import.jl")
+include("base.jl")
+include("model_selection.jl")
+include("datasets.jl")
 
 const translated_modules = Dict{Symbol, Vector{Symbol}}(
     :model_selection => [
@@ -29,15 +36,9 @@ const translated_modules = Dict{Symbol, Vector{Symbol}}(
                         :permutation_test_score,
                         :validation_curve,
     ], 
-    :datasets =>       [
-        :make_biclusters
-    ],
+    :datasets => samples_generators,
 )
 
-include("sk_import.jl")
-include("base.jl")
-include("model_selection.jl")
-include("datasets.jl")
 
 module Utils
 include("ndgrid.jl")

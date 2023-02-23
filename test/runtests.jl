@@ -20,10 +20,22 @@ warnings.simplefilter(; action="ignore",
 @sk_import preprocessing: StandardScaler
 @sk_import svm: (SVC, SVR)
 
-@testset "ScikitLearn.jl Tests" begin
+@testset "test_base" begin
     include("test_base.jl")
+end
+
+@testset "test_sklearn_api" begin
     include("test_sklearn_api.jl")
+end
+
+@testset "test_pipeline" begin
     include("test_pipeline.jl")
+end
+
+@testset "test_model_selection" begin
     include("test_model_selection.jl")
+end
+
+@testset "test_datasets" begin
     include("test_datasets.jl")
 end
