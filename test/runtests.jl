@@ -1,70 +1,41 @@
-# Adapted from scikit-learn
-# Copyright (c) 2007–2016 The scikit-learn developers.
-
-
-
-using ScikitLearn
 using Test
-using LinearAlgebra, Random, Statistics
+using PythonCall
+using ScikitLearn
 
-@testset "ScikitLearnTests" begin
+# Filter out warnings for convergence during testing
+warnings = PythonCall.pynew()
+PythonCall.pycopy!(warnings, pyimport("warnings"))
+warnings.simplefilter(; action="ignore", 
+        category=sklearn.exceptions.ConvergenceWarning)
+warnings.simplefilter(; action="ignore", 
+        category=PythonCall.pybuiltins.RuntimeWarning)
 
-    @testset "models" begin
-        include("test_models.jl") # runs tests automatically
-    end
+# python imports
+@sk_import cluster: KMeans
+@sk_import datasets: load_iris
+@sk_import decomposition: (PCA, TruncatedSVD)
+@sk_import feature_selection: (SelectKBest, f_classif)
+@sk_import linear_model: (LinearRegression, LogisticRegression)
+@sk_import pipeline: (FeatureUnion, Pipeline)
+@sk_import preprocessing: StandardScaler
+@sk_import svm: (SVC, SVR)
 
-    @testset "base" begin
-        include("test_base.jl")
-        all_test_base()
-    end
-
-    @testset "pipeline" begin
-        include("test_pipeline.jl")
-        all_test_pipeline()
-    end
-
-    @testset "crossvalidation" begin
-        include("test_crossvalidation.jl")
-        all_test_crossvalidation()
-    end
-
-    @testset "utils" begin
-        include("test_utils.jl")
-    end
-    @testset "quickstart" begin
-        include("test_quickstart.jl")
-    end
-    @testset "DataFrames" begin
-        include("test_dataframes.jl")
-    end
-
-    exceptions = ["Density_Estimation_Julia.ipynb", #GaussianMixtures fails on 0.6 as of MAR17
-                  "Plot_Kmeans_Digits_Julia.ipynb", # LowRankModels fails on 0.6 as of MAR17
-                  "Simple_1D_Kernel_Density.ipynb", # https://github.com/JuliaPy/PyCall.jl/issues/372
-                  "Gaussian_Processes_Julia.ipynb", # not ready for Julia 0.7
-                  "Decision_Tree_Regression.ipynb", # PyCall#555
-                  ]
-    function run_examples()
-        ex_dir = "../examples/"
-        for fname in readdir(ex_dir)
-            if !(fname in exceptions)
-                path = ex_dir * fname
-                if endswith(fname, ".ipynb")
-                    println("Testing $path")
-                    @eval module Testing
-                    using NBInclude
-                    @nbinclude($path)
-                    end
-                end
-            end
-        end
-    end
-
-    @testset "Notebook examples" begin
-        run_examples()
-    end
-
+@testset "test_base" begin
+    include("test_base.jl")
 end
 
-nothing
+@testset "test_sklearn_api" begin
+    include("test_sklearn_api.jl")
+end
 
+@testset "test_pipeline" begin
+    include("test_pipeline.jl")
+end
+
+@testset "test_model_selection" begin
+    include("test_model_selection.jl")
+end
+
+@testset "test_datasets" begin
+    include("test_datasets.jl")
+end

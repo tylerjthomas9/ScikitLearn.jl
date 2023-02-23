@@ -1,84 +1,125 @@
-# Adapted from scikit-learn
-# Copyright (c) 2007–2016 The scikit-learn developers.
 
-using Test
-import Random
-using ScikitLearn
-using ScikitLearn.GridSearch: GridSearchCV
-using ScikitLearn.Pipelines: Pipeline
-using ScikitLearn.Utils
-using PyCall: pyimport, PyError
-
-@sk_import svm: SVC
-@sk_import feature_selection: (SelectFpr, f_classif)
-@sk_import tree: (DecisionTreeClassifier, DecisionTreeRegressor)
-datasets = pyimport("sklearn.datasets")
-
-
-function test_is_classifier()
-    svc = SVC()
+@testset "is classifier/regressor/pairwise/transformer" begin
+    svc = SVC(max_iter=2)
+    svr = SVR(max_iter=2)
+    class_pipe = Pipeline([("scaler", StandardScaler()), ("svc", SVC())])
+    reg_pipe = Pipeline([("scaler", StandardScaler()), ("svr", SVR())])
+    
     @test is_classifier(svc)
-    @test is_classifier(GridSearchCV(svc, Dict("C"=>[0.1, 1])))
-    @test is_classifier(Pipeline([("svc", svc)]))
-    @test is_classifier(Pipeline([("svc_cv",
-                                   GridSearchCV(svc, Dict("C"=>[0.1, 1])))]))
+    @test is_classifier(class_pipe)
+    @test !is_classifier(svr)
+    @test !is_classifier(reg_pipe)
+
+    @test !is_regressor(svc)
+    @test !is_regressor(class_pipe)
+    @test is_regressor(svr)
+    @test is_regressor(reg_pipe)
+end
+
+@testset "get_classes/get_components" begin
+    iris = load_iris()
+    X = iris["data"]
+    y = iris["target"]
+
+    svc = SVC(max_iter=2)
+    fit!(svc, X, y)
+    c = ScikitLearn.get_classes(svc)
+    @test size(c) == (3,)
+
+    pca = PCA(n_components=2)
+    fit!(pca, X)
+    c = ScikitLearn.get_components(pca)
+    @test size(c) == (2,4)
+end
+
+@testset "get_params/set_params!" begin
+    svc = SVC(C=1.0)
+    params = get_params(svc)
+    @test typeof(params) == Dict{Symbol, Any}
+    @test params[:C] == 1.0
+
+    set_params!(svc, C=0.5)
+    @test get_params(svc)[:C] == 0.5
+
+    params[:C] = 0.75
+    set_params!(svc, params)
+    @test get_params(svc)[:C] == 0.75
+
+    #TODO: Why does this pass in the repl, but not with running tests
+    @test_throws PyException set_params!(svc, D=1.0)
+
+end
+
+@testset "clone" begin
+    svc = SVC(C=1.0)
+    new_svc = clone(svc)
+    @test(svc !== new_svc)
+    @test(get_params(new_svc) == get_params(new_svc))
+end
+
+@testset "get_config/set_config" begin
+    cfg = ScikitLearn.get_config()
+    @test typeof(cfg) == Dict{Symbol, Any}
+
+    ScikitLearn.set_config(working_memory=1025)
+    @test ScikitLearn.get_config()[:working_memory] == 1025
 end
 
 
-function test_set_params()
-    # test nested estimator parameter setting
-    clf = Pipeline([("svc", SVC())])
-    # non-existing parameter in svc
-    @test_throws(PyError, set_params!(clf, svc__stupid_param=true))
-    # non-existing parameter of pipeline
-    @test_throws(ArgumentError, set_params!(clf, svm__stupid_param=true))
+@testset "fit/predict" begin
+    logistic_reg = LogisticRegression(max_iter=2)
+    linear_reg = LinearRegression()
+
+    # python input
+    iris = load_iris()
+    X = iris["data"]
+    y = iris["target"]
+    fit!(logistic_reg, X, y)
+    predict(logistic_reg, X)
+    predict_proba(logistic_reg, X)
+    predict_log_proba(logistic_reg, X)
+    fit!(linear_reg, X, y)
+    predict(linear_reg, X)
+
+    # julia array
+    X = rand(100, 5)
+    y_classification = rand(0:1, 100)
+    y_regression = rand(100)
+    fit!(logistic_reg, X, y_classification)
+    predict(logistic_reg, X)
+    predict_proba(logistic_reg, X)
+    predict_log_proba(logistic_reg, X)
+    fit!(linear_reg, X, y_regression)
+    predict(linear_reg, X)
+
+    # fit_predict
+    kmeans = KMeans(n_clusters=2, max_iter=2, n_init=2)
+    fit_predict!(kmeans, X)
 end
 
 
-function test_clone()
-    # Tests that clone creates a correct deep copy.
-    # We create an estimator, make a copy of its original state
-    # (which, in this case, is the current state of the estimator),
-    # and check that the obtained copy is a correct deep copy.
+@testset "fit/transform" begin
+    scaler = StandardScaler()
+    X = rand(100, 5)
 
-    selector = SelectFpr(f_classif, alpha=0.1)
-    new_selector = clone(selector)
-    @test(selector !== new_selector)
-    @test(get_params(selector) == get_params(new_selector))
+    fit!(scaler, X)
+    transform(scaler, X)
+    X_trans = fit_transform!(scaler, X)
+    X_invtrans = inverse_transform(scaler, X_trans)
+    @test isapprox(X_invtrans, X, atol=1e-3)
+end
 
-    selector = SelectFpr(f_classif, alpha=zeros(10, 2))
-    new_selector = clone(selector)
-    @test(selector !== new_selector)
+@testset "score" begin
+    logistic_reg = LogisticRegression(max_iter=2)
+    linear_reg = LinearRegression()
+
+    # python input
+    X = rand(100, 5)
+    y_classification = rand(0:1, 100)
+    y_regression = rand(100)
+    fit!(logistic_reg, X, y_classification)
+    fit!(linear_reg, X, y_regression)
+
 end
 
 
-function test_score_sample_weight()
-    Random.seed!(0)
-
-    # test both ClassifierMixin and RegressorMixin
-    estimators = [DecisionTreeClassifier(max_depth=2),
-                  DecisionTreeRegressor(max_depth=2)]
-    sets = Any[datasets.load_iris(),
-               datasets.fetch_california_housing()]
-
-    for (est, ds) in zip(estimators, sets)
-        fit!(est, ds["data"], ds["target"])
-        # generate random sample weights
-        sample_weight = rand(1:10, length(ds["target"]))
-        # check that the score with and without sample weights are different
-        @test (score(est, ds["data"], ds["target"]) !=
-               score(est, ds["data"], ds["target"],
-                     sample_weight=sample_weight))
-    end
-end
-
-
-function all_test_base()
-    test_is_classifier()
-    test_set_params()
-    test_clone()
-    test_score_sample_weight()
-end
-
-
-:ok

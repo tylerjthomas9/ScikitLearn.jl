@@ -1,97 +1,77 @@
-# NOTE: Most of the codebase is in the module Skcore. ScikitLearn is
-# defined here by importing from Skcore and reexporting what we want in the
-# interface. This arrangement simplifies the codebase and allowed us to
-# experiment with different submodule structures without breaking everything.
-# TODO: I believe that we should get rid of most of the nested package
-# structure, but the transition will be painful.
-
-__precompile__()
 
 module ScikitLearn
 
-include("Skcore.jl")
+using MacroTools: @capture
+using Tables
+using PythonCall
 
-using PyCall: @pyimport
-using ScikitLearnBase
-using ScikitLearnBase: BaseEstimator
-using ScikitLearn.Skcore: @sk_import
+const numpy = PythonCall.pynew()
+const sklearn = PythonCall.pynew()
+const sk_base = PythonCall.pynew()
+const sk_datasets = PythonCall.pynew()
+const sk_dataset_methods = [pyconvert(String, i) for i in pybuiltins.dir(pyimport("sklearn.datasets"))]
+const sk_pipeline = PythonCall.pynew()
 
-export @sk_import, CrossValidation, Pipelines, GridSearch
-
-
-################################################################################
-
-"""    @reexportsk(identifiers...)
-is equivalent to
-    using Skcore: identifiers...
-    export identifiers...
-"""
-macro reexportsk(identifiers...)
-    esc(:(begin
-        $([:(begin
-             using ScikitLearn.Skcore: $idf
-             export $idf
-             end)
-        for idf in identifiers]...)
-    end))
+function __init__()
+    PythonCall.pycopy!(numpy, pyimport("numpy"))
+    PythonCall.pycopy!(sklearn, pyimport("sklearn"))
+    PythonCall.pycopy!(sk_base, pyimport("sklearn.base"))
+    PythonCall.pycopy!(sk_datasets, pyimport("sklearn.datasets"))
+    PythonCall.pycopy!(sk_pipeline, pyimport("sklearn.pipeline"))
 end
 
-module CrossValidation
-using ScikitLearn: @reexportsk
-using ScikitLearn.Skcore: @pyimport2
-@reexportsk(cross_val_score, cross_val_predict, train_test_split)
+include("sk_import.jl")
+include("base.jl")
+include("model_selection.jl")
+include("datasets.jl")
 
-using ScikitLearn.Skcore: cv_iterator_syms
-
-@eval @reexportsk($(cv_iterator_syms...))
-end
-
-
-module Pipelines
-using ScikitLearn: @reexportsk
-@reexportsk(Pipeline, make_pipeline, FeatureUnion, named_steps)
-end
-
-
-module GridSearch
-using ScikitLearn: @reexportsk
-@reexportsk(GridSearchCV, RandomizedSearchCV)
-end
+const translated_modules = Dict{Symbol, Vector{Symbol}}(
+    :model_selection => [
+                        :train_test_split,
+                        :check_cv,
+                        :cross_validate,
+                        :cross_val_predict,
+                        :cross_val_score,
+                        :learning_curve,
+                        :permutation_test_score,
+                        :validation_curve,
+    ], 
+    :datasets => sample_generators,
+)
 
 
 module Utils
-using ScikitLearn: @reexportsk
-using ScikitLearn.Skcore: @pyimport2
-@reexportsk(meshgrid, is_transformer, FitBit, isfit)
-export @pyimport2
+include("ndgrid.jl")
 end
 
 
-module Preprocessing
-# These are my own extensions. I'd like to keep ScikitLearn close to
-# scikit-learn, which is why they are not exported so far. I might move them
-# elsewhere. - cstjean
-using ScikitLearnBase
-using ScikitLearnBase: BaseEstimator
-include("dictencoder.jl")
-include("preprocessing.jl")
-export DictEncoder, PolynomialFeatures
-end
+export 
+# python imports
+sklearn,
+sk_base,
 
+# base
+is_classifier,
+is_regressor,
+clone,
+set_params!, 
+get_params,
 
-## using Requires
-## @require DataFrames include("dataframes.jl")
-include("dataframes.jl")
+# sklearn api
+fit!,
+predict,
+predict_proba,
+predict_log_proba,
+fit_predict!,
+transform,
+inverse_transform,
+fit_transform!,
+score,
+score_samples,
+sample,
+get_feature_names,
 
-module Models
-include("models/models.jl")
-end
-
-################################################################################
-# Other exports
-
-# Not sure if we should export all the api. set_params!/get_params are rarely
-# used by user code.
-for f in ScikitLearnBase.api @eval(@reexportsk $f) end
+# utils
+@sk_import
 
 end
