@@ -4,7 +4,6 @@
 [![Build Status](https://github.com/cstjean/ScikitLearn.jl/workflows/CI/badge.svg)](https://github.com/cstjean/ScikitLearn.jl/actions)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://cstjean.github.io/ScikitLearn.jl/dev/)
 
-
 ScikitLearn.jl implements the popular
 [scikit-learn](http://scikit-learn.org/stable/) interface and algorithms in
 Julia. It supports both models from the Julia ecosystem and those of the
