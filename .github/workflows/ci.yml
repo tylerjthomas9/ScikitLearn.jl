@@ -39,6 +39,9 @@ jobs:
       - name: "Export LD_LIBRARY_PATH envrioment variable"
         if: ${{matrix.os == 'ubuntu-latest' && matrix.julia-version == '1.6'}}
         run: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+      - name: "Export LD_LIBRARY_PATH envrioment variable"
+        if: ${{matrix.os == 'macos-latest'}}
+        run: export SYSTEM_VERSION_COMPAT=1
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-uploadcodecov@v0.1
         continue-on-error: true
