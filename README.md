@@ -43,7 +43,6 @@ The easiest and recommended way to resolve this is to upgrade to Julia v>=1.8.4.
 ROOT_ENV=`julia -e "using Conda; print(Conda.ROOTENV)`
 export LD_LIBRARY_PATH=$ROOT_ENV"/lib":$LD_LIBRARY_PATH
 ```
-
 ## Documentation
 
 See the [manual](https://cstjean.github.io/ScikitLearn.jl/dev/) and
