@@ -194,9 +194,9 @@ function import_sklearn()
                     )
                 end
                 # force reinstall of scikit-learn replacing any previous mkl version
-                Conda.add("scikit-learn>=1.2,<1.3", channel="conda-forge")
-                Conda.add("openblas")
-                Conda.add("llvm-openmp", channel = "conda-forge")
+                Conda.add("scikit-learn", channel="conda-forge")
+                # Conda.add("openblas")
+                # Conda.add("llvm-openmp", channel = "conda-forge")
                 mkl_checked = true
             end
             #PyCall.pyimport_conda("sklearn", "scikit-learn>=1.2,<1.3", "conda-forge")
